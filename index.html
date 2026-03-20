@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aces — Mobile Prototype v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── TOKENS ── */
+:root {
+  --g900:#0D3D21; --g800:#1B6B3A; --g700:#24883F; --g600:#2EA44F;
+  --g200:#C6EDD5; --g100:#E8F5EE; --g50:#F2FAF5;
+  --gold:#C8992A; --gold-l:#FEF3C7;
+  --accent:#00C46A;
+
+  /* Light mode */
+  --bg:        #F0F2F0;
+  --surface:   #FFFFFF;
+  --surface2:  #F7F9F7;
+  --border:    #E4E9E5;
+  --text:      #0D1F13;
+  --text2:     #4A5E51;
+  --text3:     #8A9E92;
+  --bubble-in: #FFFFFF;
+  --bubble-out:var(--g800);
+  --bubble-out-text:#FFFFFF;
+  --nav-bg:    #FFFFFF;
+  --header-bg: #FFFFFF;
+  --pill-bg:   #E8F5EE;
+  --pill-text: var(--g800);
+  --pill-active-bg: var(--g800);
+  --pill-active-text:#FFFFFF;
+  --island:    #111;
+  --badge:     #E53E3E;
+  --shadow:    rgba(0,0,0,0.06);
+}
+[data-theme="dark"] {
+  --bg:        #0A110C;
+  --surface:   #111A13;
+  --surface2:  #172019;
+  --border:    #1E2E21;
+  --text:      #E8F5EE;
+  --text2:     #8FBD9A;
+  --text3:     #4A6B52;
+  --bubble-in: #172019;
+  --bubble-out:#24883F;
+  --bubble-out-text:#FFFFFF;
+  --nav-bg:    #111A13;
+  --header-bg: #111A13;
+  --pill-bg:   #1E2E21;
+  --pill-text: #8FBD9A;
+  --pill-active-bg:#24883F;
+  --pill-active-text:#FFFFFF;
+  --island:    #000;
+  --badge:     #E53E3E;
+  --shadow:    rgba(0,0,0,0.4);
+}
+
+body {
+  background: #080808;
+  background-image:
+    radial-gradient(ellipse at 25% 10%, #1B6B3A1A 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 85%, #C8992A0D 0%, transparent 50%);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:36px 20px 60px;
+  gap:20px;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+
+/* ── Page chrome ── */
+.page-eyebrow{color:#555;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;font-family:monospace}
+.page-title{color:#fff;font-size:26px;font-weight:800;letter-spacing:-0.5px}
+.page-title em{color:#2EA44F;font-style:normal}
+.page-sub{color:#555;font-size:13px;margin-top:2px}
+
+/* ── Theme toggle ── */
+.theme-row{display:flex;align-items:center;gap:10px}
+.theme-toggle{
+  display:flex;align-items:center;gap:8px;
+  background:#1a1a1a;border:1px solid #2a2a2a;
+  border-radius:20px;padding:5px 14px;cursor:pointer;
+  color:#aaa;font-size:12px;font-weight:600;letter-spacing:0.3px;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  transition:all .2s;
+}
+.theme-toggle:hover{border-color:#2EA44F;color:#2EA44F}
+.theme-toggle svg{width:14px;height:14px;fill:currentColor}
+
+/* ── Phone shell ── */
+.phone-wrap{position:relative}
+.phone-shell{
+  width:393px; height:852px;
+  background:linear-gradient(160deg,#1c1c1c,#111);
+  border-radius:54px;
+  padding:12px;
+  box-shadow:
+    0 0 0 1px #2a2a2a,
+    0 0 0 2px #1a1a1a,
+    0 50px 120px rgba(0,0,0,.9),
+    inset 0 1px 0 #333;
+  flex-shrink:0;
+}
+.phone-side-btn{
+  position:absolute;
+  background:#2a2a2a;border-radius:3px;
+}
+.phone-side-btn.vol-up{width:3px;height:34px;left:-3px;top:120px}
+.phone-side-btn.vol-dn{width:3px;height:34px;left:-3px;top:164px}
+.phone-side-btn.power{width:3px;height:44px;right:-3px;top:150px}
+
+.phone-screen{
+  width:100%;height:100%;
+  border-radius:44px;
+  overflow:hidden;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  transition:background .3s;
+  position:relative;
+}
+
+/* Dynamic island */
+.dyn-island{
+  position:absolute;top:12px;left:50%;
+  transform:translateX(-50%);
+  width:126px;height:37px;
+  background:var(--island);
+  border-radius:22px;z-index:200;
+  transition:background .3s;
+}
+
+/* Status bar */
+.status-bar{
+  height:54px;padding:0 28px 10px;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  flex-shrink:0;z-index:50;
+  background:var(--header-bg);
+  transition:background .3s;
+}
+.sb-time{font-size:15px;font-weight:700;color:var(--text);transition:color .3s}
+.sb-icons{display:flex;gap:5px;align-items:center}
+.sb-icons svg{width:16px;height:16px;fill:var(--text);opacity:.8;transition:fill .3s}
+
+/* Screen content */
+.screen-content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+/* Screens */
+.tab-screen{display:none;flex:1;flex-direction:column;overflow:hidden}
+.tab-screen.active{display:flex;animation:fadeUp .18s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* Header */
+.screen-header{
+  padding:14px 20px 12px;
+  background:var(--header-bg);
+  flex-shrink:0;
+  transition:background .3s;
+}
+.screen-header.bordered{border-bottom:1px solid var(--border)}
+.hdr-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hdr-title{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.4px;transition:color .3s}
+.hdr-actions{display:flex;gap:8px}
+.hdr-btn{
+  width:36px;height:36px;border-radius:12px;
+  background:var(--surface2);
+  border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:all .15s;
+}
+.hdr-btn svg{width:18px;height:18px;fill:var(--text2);transition:fill .3s}
+.hdr-btn:active{transform:scale(.93)}
+
+/* Search */
+.search-wrap{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface2);
+  border-radius:14px;padding:10px 14px;
+  border:1px solid var(--border);
+  transition:all .3s;
+}
+.search-wrap svg{width:16px;height:16px;fill:var(--text3);flex-shrink:0;transition:fill .3s}
+.search-wrap span{font-size:14px;color:var(--text3);font-weight:500;transition:color .3s}
+
+/* Pills */
+.pills{display:flex;gap:7px;padding:10px 20px;overflow-x:auto;flex-shrink:0}
+.pills::-webkit-scrollbar{display:none}
+.pill{
+  padding:7px 15px;border-radius:22px;
+  font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer;
+  background:var(--pill-bg);color:var(--pill-text);
+  border:none;font-family:'Plus Jakarta Sans',sans-serif;
+  transition:all .15s;
+}
+.pill.active{background:var(--pill-active-bg);color:var(--pill-active-text)}
+.pill:active{transform:scale(.95)}
+
+/* Scroll list */
+.scroll-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.scroll-list::-webkit-scrollbar{display:none}
+
+/* Section divider */
+.divider{
+  padding:5px 20px 3px;
+  font-size:10px;font-weight:800;letter-spacing:1.5px;
+  color:var(--text3);text-transform:uppercase;
+  background:var(--surface2);
+  border-bottom:1px solid var(--border);
+  transition:all .3s;
+}
+
+/* ── Verification card ── */
+.verify-card{
+  margin:10px 16px;
+  background:linear-gradient(135deg,#1B6B3A,#2EA44F);
+  border-radius:18px;
+  padding:14px 16px;
+  display:flex;align-items:center;gap:12px;
+  flex-shrink:0;
+  box-shadow:0 4px 20px rgba(27,107,58,.35);
+}
+.vc-icon{font-size:24px;flex-shrink:0}
+.vc-text{flex:1}
+.vc-title{font-size:13px;font-weight:800;color:#fff;margin-bottom:2px}
+.vc-sub{font-size:11px;color:rgba(255,255,255,.75)}
+.vc-bar-bg{height:5px;background:rgba(255,255,255,.25);border-radius:3px;margin-top:7px}
+.vc-bar{height:100%;width:65%;background:#fff;border-radius:3px}
+
+/* ── Chat items ── */
+.chat-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 20px;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .12s;
+}
+.chat-item:active{background:var(--surface2)}
+.avatar{
+  width:50px;height:50px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;font-weight:800;color:#fff;
+  position:relative;
+}
+.avatar.group-avatar{border-radius:16px}
+.avatar.verified::after{
+  content:'✓';position:absolute;bottom:-1px;right:-1px;
+  width:16px;height:16px;background:var(--g700);
+  border-radius:50%;border:2px solid var(--surface);
+  font-size:8px;color:#fff;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  line-height:12px;text-align:center;
+  transition:border-color .3s;
+}
+.chat-meta{flex:1;min-width:0}
+.chat-name{font-size:14.5px;font-weight:700;color:var(--text);margin-bottom:2px;transition:color .3s}
+.chat-preview{font-size:12.5px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .3s}
+.chat-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.chat-time{font-size:11px;color:var(--text3);transition:color .3s}
+.badge{
+  background:var(--g700);color:#fff;font-size:11px;font-weight:800;
+  border-radius:11px;padding:2px 7px;min-width:20px;text-align:center;
+}
+.badge.gold{background:var(--gold)}
+
+/* ── Group cards ── */
+.group-card{
+  margin:0 14px 10px;
+  background:var(--surface);
+  border-radius:18px;
+  border:1.5px solid var(--border);
+  padding:14px;cursor:pointer;
+  transition:all .15s;
+  box-shadow:0 2px 8px var(--shadow);
+}
+.group-card:active{border-color:var(--g700);transform:scale(.99)}
+.gc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.gc-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.gc-name{font-size:14.5px;font-weight:800;color:var(--text);transition:color .3s}
+.gc-type{font-size:12px;color:var(--text3);margin-top:1px;transition:color .3s}
+.gc-desc{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:10px;transition:color .3s}
+.gc-footer{display:flex;align-items:center;justify-content:space-between}
+.gc-members{font-size:12px;color:var(--text3);font-weight:600;transition:color .3s}
+.join-btn{
+  padding:6px 16px;background:var(--g700);color:#fff;
+  border-radius:22px;font-size:12.5px;font-weight:800;
+  border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+  transition:all .15s;
+}
+.join-btn.joined{background:var(--g100);color:var(--g800)}
+[data-theme="dark"] .join-btn.joined{background:var(--surface2);color:var(--g600)}
+.join-btn:active{transform:scale(.95)}
+
+/* ── Event cards ── */
+.event-card{
+  margin:0 14px 12px;
+  border-radius:20px;overflow:hidden;
+  border:1.5px solid var(--border);
+  cursor:pointer;transition:all .15s;
+  background:var(--surface);
+  box-shadow:0 2px 8px var(--shadow);
+}
+.event-card:active{transform:scale(.99)}
+.ev-banner{height:88px;display:flex;align-items:flex-end;padding:10px 14px;position:relative}
+.ev-date-chip{
+  position:absolute;top:10px;right:12px;
+  background:rgba(255,255,255,.95);backdrop-filter:blur(8px);
+  border-radius:10px;padding:4px 10px;
+  font-size:11px;font-weight:800;color:#111;
+}
+[data-theme="dark"] .ev-date-chip{background:rgba(0,0,0,.7);color:#fff}
+.ev-body{padding:12px 14px;background:var(--surface);transition:background .3s}
+.ev-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:5px;transition:color .3s}
+.ev-meta{display:flex;gap:14px;margin-bottom:10px}
+.ev-meta-item{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text3);transition:color .3s}
+.ev-meta-item svg{width:12px;height:12px;fill:var(--text3);transition:fill .3s}
+.ev-footer{display:flex;align-items:center;justify-content:space-between}
+.att-stack{display:flex}
+.att-dot{
+  width:24px;height:24px;border-radius:50%;
+  border:2px solid var(--surface);margin-left:-6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:800;color:#fff;
+  transition:border-color .3s;
+}
+.att-dot:first-child{margin-left:0}
+.att-count{font-size:12px;color:var(--text3);margin-left:7px;align-self:center;font-weight:600;transition:color .3s}
+.rsvp-btn{
+  padding:7px 18px;background:var(--g700);color:#fff;
+  border-radius:22px;font-size:12.5px;font-weight:800;
+  border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+  transition:all .15s;
+}
+.rsvp-btn.going{background:var(--g100);color:var(--g800)}
+[data-theme="dark"] .rsvp-btn.going{background:var(--surface2);color:var(--g600)}
+.rsvp-btn:active{transform:scale(.95)}
+
+/* ── Opportunity cards ── */
+.opp-card{
+  margin:0 14px 10px;
+  background:var(--surface);
+  border-radius:18px;
+  border:1.5px solid var(--border);
+  padding:14px;cursor:pointer;
+  box-shadow:0 2px 8px var(--shadow);
+  transition:all .15s;
+}
+.opp-card:active{border-color:var(--g700)}
+.oc-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.oc-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.oc-info{flex:1}
+.oc-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:2px;transition:color .3s}
+.oc-company{font-size:12px;color:var(--text3);transition:color .3s}
+.opp-tag{padding:3px 9px;border-radius:7px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px}
+.tag-job{background:#DBEAFE;color:#1D4ED8}
+.tag-svc{background:var(--gold-l);color:#92400E}
+.tag-biz{background:var(--g100);color:var(--g800)}
+[data-theme="dark"] .tag-job{background:#1e3a5f;color:#93C5FD}
+[data-theme="dark"] .tag-svc{background:#3d2a00;color:#FCD34D}
+[data-theme="dark"] .tag-biz{background:var(--surface2);color:var(--g600)}
+.oc-desc{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:8px;transition:color .3s}
+.oc-footer{display:flex;align-items:center;justify-content:space-between}
+.oc-loc{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:3px;transition:color .3s}
+.verified-lbl{font-size:11px;font-weight:700;color:var(--g700)}
+
+/* ── Profile screen ── */
+.profile-hero{
+  background:linear-gradient(160deg,var(--g900),var(--g800));
+  padding:22px 20px 28px;flex-shrink:0;
+}
+.prof-avatar{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--gold);
+  border:3px solid rgba(255,255,255,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:800;color:#fff;
+  margin-bottom:10px;position:relative;
+}
+.prof-v-badge{
+  position:absolute;bottom:0;right:0;
+  width:22px;height:22px;background:#fff;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:var(--g800);font-weight:900;
+  border:2px solid var(--g700);
+}
+.prof-name{font-size:20px;font-weight:800;color:#fff;margin-bottom:3px}
+.prof-sub{font-size:13px;color:rgba(255,255,255,.7)}
+.prof-stats{
+  display:flex;gap:0;background:var(--surface);
+  border-radius:16px;margin:-16px 14px 0;
+  border:1.5px solid var(--border);overflow:hidden;flex-shrink:0;
+  box-shadow:0 4px 16px var(--shadow);
+  transition:background .3s,border-color .3s;
+}
+.ps-item{flex:1;padding:13px 8px;text-align:center;border-right:1px solid var(--border)}
+.ps-item:last-child{border-right:none}
+.ps-num{font-size:20px;font-weight:800;color:var(--g700)}
+.ps-label{font-size:10px;color:var(--text3);margin-top:1px;font-weight:600}
+.prof-section{padding:16px 14px 0}
+.prof-section-title{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
+.prof-row{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 14px;background:var(--surface);
+  border-radius:14px;margin-bottom:6px;
+  border:1.5px solid var(--border);cursor:pointer;
+  transition:all .3s;
+}
+.prof-row:active{border-color:var(--g700);background:var(--surface2)}
+.pr-icon{font-size:18px;width:26px;text-align:center}
+.pr-label{flex:1;font-size:14px;font-weight:600;color:var(--text);transition:color .3s}
+.pr-chevron{color:var(--text3);font-size:18px;transition:color .3s}
+
+/* ── FAB ── */
+.fab{
+  position:absolute;bottom:88px;right:16px;
+  width:54px;height:54px;
+  background:linear-gradient(135deg,var(--g700),var(--g600));
+  border-radius:50%;border:none;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 20px rgba(27,107,58,.5);
+  cursor:pointer;z-index:10;
+  transition:all .15s;
+}
+.fab:active{transform:scale(.93)}
+.fab svg{width:22px;height:22px;fill:#fff}
+
+/* ── Bottom nav ── */
+.bottom-nav{
+  display:flex;background:var(--nav-bg);
+  border-top:1px solid var(--border);
+  padding:6px 0 24px;flex-shrink:0;
+  transition:background .3s,border-color .3s;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;padding:4px 0;border:none;background:none;position:relative;
+}
+.nav-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;position:relative}
+.nav-icon svg{width:24px;height:24px;fill:var(--text3);transition:fill .2s}
+.nav-label{font-size:10px;font-weight:700;color:var(--text3);transition:color .2s;font-family:'Plus Jakarta Sans',sans-serif}
+.nav-item.active .nav-icon svg{fill:var(--g700)}
+.nav-item.active .nav-label{color:var(--g700)}
+.nav-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--badge);border-radius:50%;border:1.5px solid var(--nav-bg);transition:border-color .3s}
+.nav-active-pill{
+  position:absolute;bottom:-6px;
+  width:20px;height:3px;background:var(--g700);border-radius:2px;
+  opacity:0;transition:opacity .2s;
+}
+.nav-item.active .nav-active-pill{opacity:1}
+
+/* Spacer */
+.list-end{height:12px}
+</style>
+</head>
+<body>
+
+<div style="text-align:center">
+  <div class="page-eyebrow">Interactive Prototype · v2</div>
+  <div class="page-title">Aces <em>Mobile</em></div>
+  <div class="page-sub">iOS &amp; Android · Tap the tabs to explore</div>
+</div>
+
+<div class="theme-row">
+  <button class="theme-toggle" onclick="toggleTheme(this)">
+    <svg viewBox="0 0 24 24"><path d="M20 15.31L23.31 12 20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+    Toggle Dark / Light
+  </button>
+</div>
+
+<div class="phone-wrap">
+  <div class="phone-side-btn vol-up"></div>
+  <div class="phone-side-btn vol-dn"></div>
+  <div class="phone-side-btn power"></div>
+
+  <div class="phone-shell">
+    <div class="phone-screen" id="phone">
+      <div class="dyn-island"></div>
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span class="sb-time">9:41</span>
+        <div class="sb-icons">
+          <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+        </div>
+      </div>
+
+      <div class="screen-content">
+
+        <!-- ═══ CHATS ═══ -->
+        <div class="tab-screen active" id="screen-chats">
+          <div class="screen-header bordered">
+            <div class="hdr-row">
+              <div class="hdr-title">Chats</div>
+              <div class="hdr-actions">
+                <button class="hdr-btn"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg></button>
+              </div>
+            </div>
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <span>Search messages</span>
+            </div>
+          </div>
+
+          <div class="verify-card">
+            <div class="vc-icon">📍</div>
+            <div class="vc-text">
+              <div class="vc-title">Verifying your Sussex location</div>
+              <div class="vc-sub">Day 2 of 3 · Full access unlocks tomorrow</div>
+              <div class="vc-bar-bg"><div class="vc-bar"></div></div>
+            </div>
+          </div>
+
+          <div class="scroll-list">
+            <div class="divider">Pinned</div>
+            <div class="chat-item">
+              <div class="avatar group-avatar" style="background:linear-gradient(135deg,#1B6B3A,#2EA44F);font-size:22px;">🇳🇬</div>
+              <div class="chat-meta">
+                <div class="chat-name">Ace Community</div>
+                <div class="chat-preview">📌 Welcome — read our community guidelines</div>
+              </div>
+              <div class="chat-right"><div class="chat-time">Now</div></div>
+            </div>
+
+            <div class="divider">Groups</div>
+            <div class="chat-item">
+              <div class="avatar group-avatar verified" style="background:linear-gradient(135deg,#6D28D9,#7C3AED);">🌍</div>
+              <div class="chat-meta">
+                <div class="chat-name">Nigerians in Brighton</div>
+                <div class="chat-preview">Adaeze: Anyone going to the Afrobeats night? 🎵</div>
+              </div>
+              <div class="chat-right"><div class="chat-time">2m</div><div class="badge">12</div></div>
+            </div>
+            <div class="chat-item">
+              <div class="avatar group-avatar verified" style="background:linear-gradient(135deg,#DC2626,#EF4444);">🤝</div>
+              <div class="chat-meta">
+                <div class="chat-name">New to Sussex</div>
+                <div class="chat-preview">Emeka: Thanks everyone for the housing tips!</div>
+              </div>
+              <div class="chat-right"><div class="chat-time">14m</div><div class="badge">4</div></div>
+            </div>
+            <div class="chat-item">
+              <div class="avatar group-avatar" style="background:linear-gradient(135deg,#0369A1,#0284C7);">💼</div>
+              <div class="chat-meta">
+                <div class="chat-name">Tech Professionals Sussex</div>
+                <div class="chat-preview">Chidi: New job posting at BN Digital...</div>
+              </div>
+              <div class="chat-right"><div class="chat-time">1h</div><div class="badge gold">3</div></div>
+            </div>
+            <div class="chat-item">
+              <div class="avatar group-avatar" style="background:linear-gradient(135deg,#D97706,#F59E0B);">🎉</div>
+              <div class="chat-meta">
+                <div class="chat-name">Hastings Hangout — Sat 22nd</div>
+                <div class="chat-preview">Event chat · 34 attending</div>
+              </div>
+              <div class="chat-right"><div class="chat-time">2h</div></div>
+            </div>
+
+            <div class="divider">Direct Messages</div>
+            <div class="chat-item">
+              <div class="avatar verified" style="background:linear-gradient(135deg,#059669,#10B981);">A</div>
+              <div class="chat-meta">
+                <div class="chat-name">Adaeze Okonkwo</div>
+                <div class="chat-preview">Are you coming on Saturday? 🔥</div>
+              </div>
+              <div class="chat-right"><div class="chat-time">3h</div><div class="badge">1</div></div>
+            </div>
+            <div class="chat-item">
+              <div class="avatar verified" style="background:linear-gradient(135deg,#7C3AED,#8B5CF6);">C</div>
+              <div class="chat-meta">
+                <div class="chat-name">Chidi Nwosu</div>
+                <div class="chat-preview">I'll forward you the job spec now 👍</div>
+              </div>
+              <div class="chat-right"><div class="chat-time">Yesterday</div></div>
+            </div>
+            <div class="chat-item">
+              <div class="avatar" style="background:linear-gradient(135deg,#B45309,#D97706);">F</div>
+              <div class="chat-meta">
+                <div class="chat-name">Funke Adeyemi</div>
+                <div class="chat-preview">Thank you so much! God bless 🙏</div>
+              </div>
+              <div class="chat-right"><div class="chat-time">Mon</div></div>
+            </div>
+            <div class="list-end"></div>
+          </div>
+          <button class="fab"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></button>
+        </div>
+
+        <!-- ═══ COMMUNITY ═══ -->
+        <div class="tab-screen" id="screen-community">
+          <div class="screen-header" style="background:linear-gradient(160deg,var(--g900),var(--g800));">
+            <div class="hdr-row" style="margin-bottom:10px">
+              <div class="hdr-title" style="color:#fff">Community</div>
+              <button class="hdr-btn" style="background:rgba(255,255,255,.15)"><svg viewBox="0 0 24 24" style="fill:#fff"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg></button>
+            </div>
+            <div class="search-wrap" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2)">
+              <svg viewBox="0 0 24 24" style="fill:rgba(255,255,255,.7)"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <span style="color:rgba(255,255,255,.65)">Find your group</span>
+            </div>
+          </div>
+          <div class="pills" style="background:var(--bg);padding-top:12px">
+            <button class="pill active" onclick="activePill(this)">All</button>
+            <button class="pill" onclick="activePill(this)">📍 Location</button>
+            <button class="pill" onclick="activePill(this)">👥 Social</button>
+            <button class="pill" onclick="activePill(this)">💼 Professional</button>
+            <button class="pill" onclick="activePill(this)">🌍 Cultural</button>
+          </div>
+
+          <!-- AI Recommendations -->
+          <div style="margin:8px 14px 2px;background:linear-gradient(135deg,var(--g900),var(--g800));border-radius:16px;padding:12px 14px;flex-shrink:0;">
+            <div style="font-size:10px;font-weight:800;color:var(--gold);letter-spacing:1px;margin-bottom:6px;">✨ AI SUGGESTED FOR YOU</div>
+            <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;">
+              <div style="background:rgba(255,255,255,.12);border-radius:12px;padding:8px 12px;white-space:nowrap;flex-shrink:0;">
+                <div style="font-size:12px;font-weight:700;color:#fff;">🤝 New to Sussex</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;">87 members</div>
+              </div>
+              <div style="background:rgba(255,255,255,.12);border-radius:12px;padding:8px 12px;white-space:nowrap;flex-shrink:0;">
+                <div style="font-size:12px;font-weight:700;color:#fff;">🍳 Naija Food</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;">156 members</div>
+              </div>
+              <div style="background:rgba(255,255,255,.12);border-radius:12px;padding:8px 12px;white-space:nowrap;flex-shrink:0;">
+                <div style="font-size:12px;font-weight:700;color:#fff;">⛪ Faith Sussex</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;">204 members</div>
+              </div>
+            </div>
+          </div>
+          <div class="scroll-list" style="padding-top:8px">
+            <div class="divider">Your Groups</div>
+            <div class="group-card">
+              <div class="gc-top"><div class="gc-icon" style="background:var(--g100);">📍</div><div><div class="gc-name">Nigerians in Brighton</div><div class="gc-type">Location Group</div></div></div>
+              <div class="gc-desc">The main hub for Nigerians living in Brighton & Hove.</div>
+              <div class="gc-footer"><div class="gc-members">👥 342 verified</div><button class="join-btn joined" onclick="toggleJoin(this)">Joined ✓</button></div>
+            </div>
+            <div class="group-card">
+              <div class="gc-top"><div class="gc-icon" style="background:#DBEAFE;">💼</div><div><div class="gc-name">Tech Professionals Sussex</div><div class="gc-type">Professional Group</div></div></div>
+              <div class="gc-desc">Engineers, developers, and tech founders in Sussex.</div>
+              <div class="gc-footer"><div class="gc-members">👥 118 verified</div><button class="join-btn joined" onclick="toggleJoin(this)">Joined ✓</button></div>
+            </div>
+            <div class="divider">Suggested For You</div>
+            <div class="group-card">
+              <div class="gc-top"><div class="gc-icon" style="background:var(--gold-l);">🤝</div><div><div class="gc-name">New to Sussex</div><div class="gc-type">Social Group</div></div></div>
+              <div class="gc-desc">Just arrived? Housing, transport, jobs, and connections.</div>
+              <div class="gc-footer"><div class="gc-members">👥 87 verified</div><button class="join-btn" onclick="toggleJoin(this)">Join</button></div>
+            </div>
+            <div class="group-card">
+              <div class="gc-top"><div class="gc-icon" style="background:#FCE7F3;">⛪</div><div><div class="gc-name">Sussex Nigerian Christians</div><div class="gc-type">Faith Group</div></div></div>
+              <div class="gc-desc">Fellowship, prayer, and community events for Nigerian Christians.</div>
+              <div class="gc-footer"><div class="gc-members">👥 204 verified</div><button class="join-btn" onclick="toggleJoin(this)">Join</button></div>
+            </div>
+            <div class="group-card">
+              <div class="gc-top"><div class="gc-icon" style="background:var(--g100);">🍳</div><div><div class="gc-name">Naija Food & Catering</div><div class="gc-type">Interest Group</div></div></div>
+              <div class="gc-desc">Recipes, catering finds, and Nigerian food suppliers.</div>
+              <div class="gc-footer"><div class="gc-members">👥 156 verified</div><button class="join-btn" onclick="toggleJoin(this)">Join</button></div>
+            </div>
+            <div class="list-end"></div>
+          </div>
+        </div>
+
+        <!-- ═══ EVENTS ═══ -->
+        <div class="tab-screen" id="screen-events">
+          <div class="screen-header bordered">
+            <div class="hdr-row">
+              <div class="hdr-title">Events</div>
+              <button class="hdr-btn"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg></button>
+            </div>
+            <div class="search-wrap"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><span>Search events</span></div>
+          </div>
+          <div class="pills">
+            <button class="pill active" onclick="activePill(this)">This Week</button>
+            <button class="pill" onclick="activePill(this)">This Month</button>
+            <button class="pill" onclick="activePill(this)">Brighton</button>
+            <button class="pill" onclick="activePill(this)">Hastings</button>
+            <button class="pill" onclick="activePill(this)">Free</button>
+          </div>
+          <div class="scroll-list" style="padding-top:8px">
+            <div class="event-card">
+              <div class="ev-banner" style="background:linear-gradient(135deg,#0D3D21,#1B6B3A)"><div class="ev-date-chip">SAT 22 MAR</div></div>
+              <div class="ev-body">
+                <div class="ev-title">Hastings Nigerian Hangout 🎉</div>
+                <div class="ev-meta">
+                  <div class="ev-meta-item"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>The View, Hastings</div>
+                  <div class="ev-meta-item"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>7:00 PM · Free</div>
+                </div>
+                <div class="ev-footer">
+                  <div style="display:flex;align-items:center">
+                    <div class="att-stack"><div class="att-dot" style="background:#1B6B3A">A</div><div class="att-dot" style="background:#7C3AED">C</div><div class="att-dot" style="background:#DC2626">F</div></div>
+                    <div class="att-count">+31 going</div>
+                  </div>
+                  <button class="rsvp-btn going" onclick="toggleRsvp(this)">Going ✓</button>
+                </div>
+              </div>
+            </div>
+            <div class="event-card">
+              <div class="ev-banner" style="background:linear-gradient(135deg,#4C1D95,#6D28D9)"><div class="ev-date-chip">SUN 23 MAR</div></div>
+              <div class="ev-body">
+                <div class="ev-title">Afrobeats & Jollof Night 🎵</div>
+                <div class="ev-meta">
+                  <div class="ev-meta-item"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>Komedia, Brighton</div>
+                  <div class="ev-meta-item"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>8:00 PM · £12</div>
+                </div>
+                <div class="ev-footer">
+                  <div style="display:flex;align-items:center">
+                    <div class="att-stack"><div class="att-dot" style="background:#059669">E</div><div class="att-dot" style="background:#D97706">B</div><div class="att-dot" style="background:#DC2626">T</div></div>
+                    <div class="att-count">+67 going</div>
+                  </div>
+                  <button class="rsvp-btn" onclick="toggleRsvp(this)">RSVP</button>
+                </div>
+              </div>
+            </div>
+            <div class="event-card">
+              <div class="ev-banner" style="background:linear-gradient(135deg,#92400E,#D97706)"><div class="ev-date-chip">WED 26 MAR</div></div>
+              <div class="ev-body">
+                <div class="ev-title">Tech Founders Breakfast ☕</div>
+                <div class="ev-meta">
+                  <div class="ev-meta-item"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>Hub Sussex, Brighton</div>
+                  <div class="ev-meta-item"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>9:00 AM · Free</div>
+                </div>
+                <div class="ev-footer">
+                  <div style="display:flex;align-items:center">
+                    <div class="att-stack"><div class="att-dot" style="background:#0369A1">K</div><div class="att-dot" style="background:#7C3AED">O</div></div>
+                    <div class="att-count">+16 going</div>
+                  </div>
+                  <button class="rsvp-btn" onclick="toggleRsvp(this)">RSVP</button>
+                </div>
+              </div>
+            </div>
+            <div class="list-end"></div>
+          </div>
+          <button class="fab"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg></button>
+        </div>
+
+        <!-- ═══ OPPORTUNITIES ═══ -->
+        <div class="tab-screen" id="screen-opps">
+          <div class="screen-header bordered">
+            <div class="hdr-row">
+              <div class="hdr-title">Opportunities</div>
+              <button class="hdr-btn"><svg viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg></button>
+            </div>
+            <div class="search-wrap"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><span>Jobs, services, businesses...</span></div>
+          </div>
+          <div class="pills">
+            <button class="pill active" onclick="activePill(this)">All</button>
+            <button class="pill" onclick="activePill(this)">💼 Jobs</button>
+            <button class="pill" onclick="activePill(this)">🔧 Services</button>
+            <button class="pill" onclick="activePill(this)">🏪 Business</button>
+            <button class="pill" onclick="activePill(this)">🆘 Help</button>
+          </div>
+          <div class="scroll-list" style="padding-top:8px">
+            <div class="opp-card">
+              <div class="oc-top"><div class="oc-icon" style="background:#DBEAFE">💻</div><div class="oc-info"><div class="oc-title">Frontend Developer (React)</div><div class="oc-company">BN Digital · Full-time</div></div><div class="opp-tag tag-job">Job</div></div>
+              <div class="oc-desc">React developer for 6-month contract. Remote-friendly, Brighton-based.</div>
+              <div class="oc-footer"><div class="oc-loc">📍 Brighton · £45–55k</div><div class="verified-lbl">✓ Verified</div></div>
+            </div>
+            <div class="opp-card">
+              <div class="oc-top"><div class="oc-icon" style="background:var(--gold-l)">🍳</div><div class="oc-info"><div class="oc-title">Nigerian Catering — Events</div><div class="oc-company">Mama Titi's Kitchen</div></div><div class="opp-tag tag-svc">Service</div></div>
+              <div class="oc-desc">Authentic Nigerian catering for events across Sussex. 5★ rated.</div>
+              <div class="oc-footer"><div class="oc-loc">📍 All Sussex</div><div class="verified-lbl">✓ Verified</div></div>
+            </div>
+            <div class="opp-card">
+              <div class="oc-top"><div class="oc-icon" style="background:#D1FAE5">🏥</div><div class="oc-info"><div class="oc-title">Healthcare Support Worker</div><div class="oc-company">Sussex NHS Trust · Part-time</div></div><div class="opp-tag tag-job">Job</div></div>
+              <div class="oc-desc">Part-time support roles at Eastbourne DGH. No agency fees.</div>
+              <div class="oc-footer"><div class="oc-loc">📍 Eastbourne · £13.50/hr</div><div class="verified-lbl">✓ Verified</div></div>
+            </div>
+            <div class="opp-card">
+              <div class="oc-top"><div class="oc-icon" style="background:#FCE7F3">📸</div><div class="oc-info"><div class="oc-title">Event Photography</div><div class="oc-company">Kemi Shots</div></div><div class="opp-tag tag-svc">Service</div></div>
+              <div class="oc-desc">Professional photography for community events, naming ceremonies.</div>
+              <div class="oc-footer"><div class="oc-loc">📍 Brighton & Hastings</div><div class="verified-lbl">✓ Verified</div></div>
+            </div>
+            <div class="list-end"></div>
+          </div>
+          <button class="fab"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+        </div>
+
+
+        <!-- ═══ AI SEARCH ═══ -->
+        <div class="tab-screen" id="screen-search">
+          <div class="screen-header bordered">
+            <div class="hdr-row">
+              <div class="hdr-title">AI Search</div>
+            </div>
+            <div class="search-wrap" style="border-color:var(--g700)">
+              <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <span id="ai-search-placeholder">Try: "events in Brighton this weekend"</span>
+            </div>
+          </div>
+          <div class="scroll-list" style="padding:12px 14px;">
+            <!-- AI label -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <div style="width:28px;height:28px;background:linear-gradient(135deg,var(--g700),var(--g600));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;">✨</div>
+              <div>
+                <div style="font-size:13px;font-weight:800;color:var(--text);">Search everything with AI</div>
+                <div style="font-size:11px;color:var(--text3);">Groups · Events · Opportunities</div>
+              </div>
+            </div>
+            <!-- Sample queries -->
+            <div style="font-size:10px;font-weight:800;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Try asking</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+              <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;cursor:pointer;" onclick="showAIResult(this)">
+                <div style="font-size:13px;font-weight:600;color:var(--text);">Nigerian events in Brighton this weekend</div>
+              </div>
+              <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;cursor:pointer;" onclick="showAIResult(this)">
+                <div style="font-size:13px;font-weight:600;color:var(--text);">Catering services near Hastings</div>
+              </div>
+              <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;cursor:pointer;" onclick="showAIResult(this)">
+                <div style="font-size:13px;font-weight:600;color:var(--text);">Tech jobs in Sussex</div>
+              </div>
+              <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;cursor:pointer;" onclick="showAIResult(this)">
+                <div style="font-size:13px;font-weight:600;color:var(--text);">New arrival housing tips</div>
+              </div>
+            </div>
+            <!-- AI result (hidden by default) -->
+            <div id="ai-result" style="display:none;">
+              <div style="font-size:10px;font-weight:800;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">✨ AI Results</div>
+              <div style="background:var(--g100);border-radius:12px;padding:12px 14px;margin-bottom:10px;">
+                <div style="font-size:11px;font-weight:700;color:var(--g800);margin-bottom:6px;">EVENTS (2 found)</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">Hastings Nigerian Hangout 🎉</div>
+                <div style="font-size:11px;color:var(--text3);">Sat 22 Mar · The View · 34 going</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-top:8px;margin-bottom:2px;">Afrobeats & Jollof Night 🎵</div>
+                <div style="font-size:11px;color:var(--text3);">Sun 23 Mar · Komedia Brighton · 67 going</div>
+              </div>
+              <div style="background:var(--g100);border-radius:12px;padding:12px 14px;">
+                <div style="font-size:11px;font-weight:700;color:var(--g800);margin-bottom:6px;">GROUPS (1 found)</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">Nigerians in Brighton</div>
+                <div style="font-size:11px;color:var(--text3);">342 verified members · Location Group</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ PROFILE ═══ -->
+        <div class="tab-screen" id="screen-profile">
+          <div class="scroll-list">
+            <div class="profile-hero">
+              <div class="prof-avatar">O<div class="prof-v-badge">✓</div></div>
+              <div class="prof-name">Oluwaseun Adeyemi</div>
+              <div class="prof-sub">🟢 Verified Sussex Member · Brighton</div>
+            </div>
+            <div class="prof-stats">
+              <div class="ps-item"><div class="ps-num">6</div><div class="ps-label">Groups</div></div>
+              <div class="ps-item"><div class="ps-num">12</div><div class="ps-label">Events</div></div>
+              <div class="ps-item"><div class="ps-num">3</div><div class="ps-label">Posted</div></div>
+            </div>
+            <div style="height:16px"></div>
+            <div class="prof-section">
+              <div class="prof-section-title">Account</div>
+              <div class="prof-row"><div class="pr-icon">👤</div><div class="pr-label">Edit Profile</div><div class="pr-chevron">›</div></div>
+              <div class="prof-row"><div class="pr-icon">🔔</div><div class="pr-label">Notifications</div><div class="pr-chevron">›</div></div>
+              <div class="prof-row"><div class="pr-icon">🔒</div><div class="pr-label">Privacy & Location</div><div class="pr-chevron">›</div></div>
+            </div>
+            <div class="prof-section" style="margin-top:8px">
+              <div class="prof-section-title">Community</div>
+              <div class="prof-row"><div class="pr-icon">👥</div><div class="pr-label">My Groups</div><div class="pr-chevron">›</div></div>
+              <div class="prof-row"><div class="pr-icon">📅</div><div class="pr-label">My Events</div><div class="pr-chevron">›</div></div>
+              <div class="prof-row"><div class="pr-icon">💼</div><div class="pr-label">My Postings</div><div class="pr-chevron">›</div></div>
+              <div class="prof-row"><div class="pr-icon">📱</div><div class="pr-label">Share Profile (QR)</div><div class="pr-chevron">›</div></div>
+            </div>
+            <div class="prof-section" style="margin-top:8px;padding-bottom:20px">
+              <div class="prof-section-title">App</div>
+              <div class="prof-row"><div class="pr-icon">❓</div><div class="pr-label">Help & FAQ</div><div class="pr-chevron">›</div></div>
+              <div class="prof-row"><div class="pr-icon">🚩</div><div class="pr-label">Community Guidelines</div><div class="pr-chevron">›</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- screen-content -->
+
+      <!-- Bottom nav -->
+      <div class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('chats',this)">
+          <div class="nav-icon"><div class="nav-dot"></div><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg></div>
+          <span class="nav-label">Chats</span>
+          <div class="nav-active-pill"></div>
+        </button>
+        <button class="nav-item" onclick="switchTab('community',this)">
+          <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+          <span class="nav-label">Community</span>
+          <div class="nav-active-pill"></div>
+        </button>
+        <button class="nav-item" onclick="switchTab('events',this)">
+          <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg></div>
+          <span class="nav-label">Events</span>
+          <div class="nav-active-pill"></div>
+        </button>
+        <button class="nav-item" onclick="switchTab('opps',this)">
+          <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.36C18 2.1 15.96 0 13.36 0c-1.3 0-2.43.52-3.28 1.38L9 3.36 7.92 2.38C7.07.52 5.94 0 4.64 0 2.04 0 0 2.1 0 4.64c0 .48.11.92.18 1.36H0v2h20V6zm-9 0H4.9c-.07-.2-.9-1.36-.9-1.36C4 3.7 4.27 2 4.64 2c.37 0 1.08.36 1.46.74L9 5.93V6zm6.1 0H13V5.93l2.9-3.19c.38-.38 1.09-.74 1.46-.74.37 0 .64 1.7.64 1.64L15.1 6zM2 20c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8H2v12z"/></svg></div>
+          <span class="nav-label">Opps</span>
+          <div class="nav-active-pill"></div>
+        </button>
+        <button class="nav-item" onclick="switchTab('search',this)">
+          <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
+          <span class="nav-label">Search</span>
+          <div class="nav-active-pill"></div>
+        </button>
+        <button class="nav-item" onclick="switchTab('profile',this)">
+          <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+          <span class="nav-label">Profile</span>
+          <div class="nav-active-pill"></div>
+        </button>
+      </div>
+
+    </div><!-- phone-screen -->
+  </div><!-- phone-shell -->
+</div><!-- phone-wrap -->
+
+<script>
+let dark = false;
+
+function toggleTheme(btn) {
+  dark = !dark;
+  document.getElementById('phone').setAttribute('data-theme', dark ? 'dark' : '');
+  btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20 15.31L23.31 12 20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg> ${dark ? 'Switch to Light' : 'Switch to Dark'}`;
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('screen-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+function activePill(el) {
+  el.closest('.pills').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleJoin(btn) {
+  btn.classList.toggle('joined');
+  btn.textContent = btn.classList.contains('joined') ? 'Joined ✓' : 'Join';
+}
+
+function showAIResult(el) {
+  document.getElementById('ai-result').style.display = 'block';
+  el.style.background = 'var(--g100)';
+  el.style.borderColor = 'var(--g700)';
+}
+
+function toggleRsvp(btn) {
+  btn.classList.toggle('going');
+  btn.textContent = btn.classList.contains('going') ? 'Going ✓' : 'RSVP';
+}
+</script>
+</body>
+</html>
